@@ -52,7 +52,7 @@ var Protocol = function Protocol(name, id) {
   this.boundGetter = this.getter.bind(this);
 };
 
-Protocol.prototype.MAX_STRING_PARAMETER_LENGTH = 100;
+Protocol.prototype.MAX_STRING_PARAMETER_LENGTH = 9999;
 
 Protocol.prototype.typeNumerical = { isNumerical: true, requiredBufferLen: 2 };
 
