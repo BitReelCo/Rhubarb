@@ -73,6 +73,7 @@ Server.prototype.init = function(port){
       }
     }.bind({clientID: clientID, server: this, ws: ws}));
   }.bind(this));
+  
   return this.wsServer
 }
 

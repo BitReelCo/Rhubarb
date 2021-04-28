@@ -20,8 +20,7 @@ Rhubarb.prototype.init = function(parameters){
   Globals.onReady = parameters.onReady;
 
   if (this.IS_NODE){
-    this.wsServer = this._initNode(parameters);
-    return;
+    return this._initNode(parameters);
   }
 
   var protocolDefinitionPath = parameters.protocolDefinitionPath;
