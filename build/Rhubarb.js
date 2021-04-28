@@ -414,6 +414,22 @@ function uuidv4() {
   });
 }
 
+var express = require('express');
+var app = express();
+require('https').createServer(app);
+var port = process.env.PORT || 8087;
+app.listen(port);
+//Server
+// const server = app.listen(port);
+// const jsonParser = bodyParser.json()
+// const urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+app.get('/healthcheck', function (req, res) {
+  res.json({
+    my: "guy"
+  });
+});
+
 var Rhubarb = function Rhubarb() {
   this.IS_NODE = typeof window == "undefined";
 };

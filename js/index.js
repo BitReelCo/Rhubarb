@@ -4,6 +4,22 @@ import Server from "./node/Server";
 import Globals from "./util/Globals";
 import ReusableBufferCache from "./util/ReusableBufferCache";
 
+const express = require('express');
+const app = express();
+require('https').createServer(app);
+const port = process.env.PORT || 8087;
+app.listen(port);
+//Server
+// const server = app.listen(port);
+// const jsonParser = bodyParser.json()
+// const urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+app.get('/healthcheck', (req, res) => {
+  res.json({
+    my: "guy"
+  })
+});
+
 var Rhubarb = function(){
   this.IS_NODE = (typeof window == "undefined");
 }

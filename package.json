@@ -33,6 +33,8 @@
   ],
   "homepage": "https://github.com/oguzeroglu/Rhubarb#readme",
   "dependencies": {
+    "express": "^4.17.1",
+    "https": "^1.0.0",
     "ws": "^7.2.1"
   },
   "devDependencies": {
