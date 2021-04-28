@@ -208,9 +208,9 @@ Rhubarb.prototype._validateParameters = function(parameters){
   if (!this.IS_NODE && isServer){
     throw new Error("Cannot use browser as a server.");
   }
-  if (isServer && !serverListenPort){
-    throw new Error("serverListenPort is not defined within parameters.");
-  }
+  // if (isServer && !serverListenPort){
+  //   throw new Error("serverListenPort is not defined within parameters.");
+  // }
   if (!isServer && !serverAddress){
     throw new Error("serverAddress is not defined within parameters.");
   }
