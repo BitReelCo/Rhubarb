@@ -363,31 +363,8 @@ Server.prototype.sendProtocolToClient = function (clientID, protocol) {
 };
 
 Server.prototype.init = function (port) {
-  var _this = this;
-
-  var express = require('express');
-  var app = express();
-  require('https').createServer(app);
-  var expressPort = 8087;
-  var expresServer = app.listen(expressPort);
-  //Server
-  // const server = app.listen(port);
-  // const jsonParser = bodyParser.json()
-  // const urlencodedParser = bodyParser.urlencoded({ extended: false })
-
-  app.get('/healthcheck', function (req, res) {
-    res.json({
-      my: "guy"
-    });
-  });
 
   this.wsServer = new this.wsLib.Server({ noServer: true });
-
-  expresServer.on('upgrade', function (request, socket, head) {
-    _this.wsServer.handleUpgrade(request, socket, head, function (socket) {
-      _this.wsServer.emit('connection', socket, request);
-    });
-  });
 
   Globals$1.setReady();
   this.wsServer.on("connection", function (ws) {
@@ -429,6 +406,7 @@ Server.prototype.init = function (port) {
       }
     }.bind({ clientID: clientID, server: this, ws: ws }));
   }.bind(this));
+  return this.wsServer;
 };
 
 function uuidv4() {
@@ -455,7 +433,7 @@ Rhubarb.prototype.init = function (parameters) {
   Globals$1.onReady = parameters.onReady;
 
   if (this.IS_NODE) {
-    this._initNode(parameters);
+    this.wsServer = this._initNode(parameters);
     return;
   }
 
@@ -679,9 +657,10 @@ Rhubarb.prototype._initNode = function (parameters) {
   var ws = require("ws");
   if (isServer) {
     var server = new Server(ws);
-    server.init(serverListenPort);
+    var wsServer = server.init(serverListenPort);
     Globals$1.setServer(server);
     Globals$1.setReady();
+    return wsServer;
   } else {
     throw new Error("NodeJS clients are not yet supported.");
   }

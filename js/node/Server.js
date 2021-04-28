@@ -30,30 +30,8 @@ Server.prototype.sendProtocolToClient = function(clientID, protocol){
 }
 
 Server.prototype.init = function(port){
-  const express = require('express');
-  const app = express();
-  require('https').createServer(app);
-  const expressPort = 8087;
-  let expresServer = app.listen(expressPort);
-  //Server
-  // const server = app.listen(port);
-  // const jsonParser = bodyParser.json()
-  // const urlencodedParser = bodyParser.urlencoded({ extended: false })
-
-  app.get('/healthcheck', (req, res) => {
-    res.json({
-      my: "guy"
-    })
-  });
 
   this.wsServer = new this.wsLib.Server({ noServer: true });
-
-
-  expresServer.on('upgrade', (request, socket, head) => {
-    this.wsServer.handleUpgrade(request, socket, head, socket => {
-      this.wsServer.emit('connection', socket, request);
-    });
-  });
 
   Globals.setReady();
   this.wsServer.on("connection", function(ws){
@@ -95,6 +73,7 @@ Server.prototype.init = function(port){
       }
     }.bind({clientID: clientID, server: this, ws: ws}));
   }.bind(this));
+  return this.wsServer
 }
 
 function uuidv4(){

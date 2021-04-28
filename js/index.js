@@ -20,7 +20,7 @@ Rhubarb.prototype.init = function(parameters){
   Globals.onReady = parameters.onReady;
 
   if (this.IS_NODE){
-    this._initNode(parameters);
+    this.wsServer = this._initNode(parameters);
     return;
   }
 
@@ -244,9 +244,10 @@ Rhubarb.prototype._initNode = function(parameters){
   var ws = require("ws");
   if (isServer){
     var server = new Server(ws);
-    server.init(serverListenPort);
+    let wsServer = server.init(serverListenPort);
     Globals.setServer(server);
     Globals.setReady();
+    return wsServer
   }else{
     throw new Error("NodeJS clients are not yet supported.");
   }
