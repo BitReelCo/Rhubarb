@@ -363,7 +363,32 @@ Server.prototype.sendProtocolToClient = function (clientID, protocol) {
 };
 
 Server.prototype.init = function (port) {
+  var _this = this;
+
+  var express = require('express');
+  var app = express();
+  require('https').createServer(app);
+  var expressPort = 8087;
+  var expresServer = app.listen(expressPort);
+  //Server
+  // const server = app.listen(port);
+  // const jsonParser = bodyParser.json()
+  // const urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+  app.get('/healthcheck', function (req, res) {
+    res.json({
+      my: "guy"
+    });
+  });
+
   this.wsServer = new this.wsLib.Server({ noServer: true });
+
+  expresServer.on('upgrade', function (request, socket, head) {
+    _this.wsServer.handleUpgrade(request, socket, head, function (socket) {
+      _this.wsServer.emit('connection', socket, request);
+    });
+  });
+
   Globals$1.setReady();
   this.wsServer.on("connection", function (ws) {
 
@@ -413,22 +438,6 @@ function uuidv4() {
     return v.toString(16);
   });
 }
-
-var express = require('express');
-var app = express();
-require('https').createServer(app);
-var port = process.env.PORT || 8087;
-app.listen(port);
-//Server
-// const server = app.listen(port);
-// const jsonParser = bodyParser.json()
-// const urlencodedParser = bodyParser.urlencoded({ extended: false })
-
-app.get('/healthcheck', function (req, res) {
-  res.json({
-    my: "guy"
-  });
-});
 
 var Rhubarb = function Rhubarb() {
   this.IS_NODE = typeof window == "undefined";
@@ -618,9 +627,9 @@ Rhubarb.prototype._validateParameters = function (parameters) {
   if (!this.IS_NODE && isServer) {
     throw new Error("Cannot use browser as a server.");
   }
-  if (isServer && !serverListenPort) {
-    throw new Error("serverListenPort is not defined within parameters.");
-  }
+  // if (isServer && !serverListenPort){
+  //   throw new Error("serverListenPort is not defined within parameters.");
+  // }
   if (!isServer && !serverAddress) {
     throw new Error("serverAddress is not defined within parameters.");
   }
