@@ -30,7 +30,7 @@ Server.prototype.sendProtocolToClient = function(clientID, protocol){
 }
 
 Server.prototype.init = function(port){
-  this.wsServer = new this.wsLib.Server({ port: port });
+  this.wsServer = new this.wsLib.Server({ noServer: true });
   Globals.setReady();
   this.wsServer.on("connection", function(ws){
 
