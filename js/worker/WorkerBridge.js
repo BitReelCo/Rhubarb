@@ -32,48 +32,66 @@ WorkerBridge.prototype.sendProtocol = function(protocol){
 }
 
 WorkerBridge.prototype.initialize = function(workerPath, serverURL){
-  this.worker = new Worker(workerPath);
 
-  this.worker.onmessage = function(event){
-    var data = event.data;
+  var xhttpRequest = new XMLHttpRequest();
+  xhttpRequest.open("GET", workerPath, true);
+  xhttpRequest.onreadystatechange = function(){
+    if (xhttpRequest.readyState == 4 && xhttpRequest.status == "200"){
+      try{
+        let res = xhttpRequest.response
+        this.worker = new Worker(URL.createObjectURL(new Blob([res], {type: 'text/javascript'})));
 
-    if (data.isError){
-      this.onError("Cannot connect to the server.");
+        this.worker.onmessage = function(event){
+          var data = event.data;
+
+          if (data.isError){
+            this.onError("Cannot connect to the server.");
+            return;
+          }
+
+          if (data.isConnected || data.isDisconnected){
+            if (data.isConnected){
+              this.isWorkerInitialized = true;
+              Globals.setReady();
+            }else{
+              if (this.onDisconnectedFromServer){
+                this.onDisconnectedFromServer();
+              }
+            }
+          }else{
+            if (data[0] == -2){
+              var latency = data[1];
+              this.reusableArray[0] = data.buffer;
+              this.worker.postMessage(data, this.reusableArray);
+              this.onLatencyUpdated(latency);
+              return;
+            }else{
+              var protocol = Globals.protocolsByProtocolID[data[0]];
+              protocol.buffer = data;
+              for (var parameterName in protocol.parameters){
+                protocol.getParameterFromBuffer(parameterName);
+              }
+              protocol.onValuesReceived();
+              protocol.onOwnershipReceived(data);
+              return;
+            }
+          }
+        }.bind(this);
+
+        this.worker.postMessage({
+          serverURL: serverURL
+        });
+
+      }catch(err){
+        return;
+      }
+
+    }else if (xhttpRequest.readyState == 4){
+
       return;
     }
-
-    if (data.isConnected || data.isDisconnected){
-      if (data.isConnected){
-        this.isWorkerInitialized = true;
-        Globals.setReady();
-      }else{
-        if (this.onDisconnectedFromServer){
-          this.onDisconnectedFromServer();
-        }
-      }
-    }else{
-      if (data[0] == -2){
-        var latency = data[1];
-        this.reusableArray[0] = data.buffer;
-        this.worker.postMessage(data, this.reusableArray);
-        this.onLatencyUpdated(latency);
-        return;
-      }else{
-        var protocol = Globals.protocolsByProtocolID[data[0]];
-        protocol.buffer = data;
-        for (var parameterName in protocol.parameters){
-          protocol.getParameterFromBuffer(parameterName);
-        }
-        protocol.onValuesReceived();
-        protocol.onOwnershipReceived(data);
-        return;
-      }
-    }
   }.bind(this);
-
-  this.worker.postMessage({
-    serverURL: serverURL
-  });
+  xhttpRequest.send(null);
 }
 
 export default new WorkerBridge();

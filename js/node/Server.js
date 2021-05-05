@@ -1,5 +1,4 @@
 import Globals from "../util/Globals";
-
 var Server = function(wsLib){
   this.wsLib = wsLib;
   this.wsByClientID = new Object();
@@ -30,8 +29,8 @@ Server.prototype.sendProtocolToClient = function(clientID, protocol){
 }
 
 Server.prototype.init = function(port){
-
-  this.wsServer = new this.wsLib.Server({ noServer: true });
+  console.log("Port was not specified. Starting ws in noServer mode. You now need to upgrade connections yourself outside Rhubarb.")
+  this.wsServer = new this.wsLib.Server(port || { noServer: true });
 
   Globals.setReady();
   this.wsServer.on("connection", function(ws){

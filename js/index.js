@@ -23,8 +23,8 @@ Rhubarb.prototype.init = function(parameters){
     return this._initNode(parameters);
   }
 
-  var protocolDefinitionPath = parameters.protocolDefinitionPath;
-  var workerPath = parameters.workerPath;
+  var protocolDefinitionPath = parameters.basePath + parameters.protocolDefinitionPath;
+  var workerPath =  parameters.basePath + parameters.workerPath;
   var serverAddress = parameters.serverAddress;
   var onError = parameters.onError;
 
@@ -176,9 +176,9 @@ Rhubarb.prototype.destroy = function(){
 Rhubarb.prototype._validateParameters = function(parameters){
   var protocolDefinitionPath = parameters.protocolDefinitionPath;
   var workerPath = parameters.workerPath;
+  var basePath = parameters.basePath;
   var isServer = parameters.isServer;
   var serverAddress = parameters.serverAddress;
-  var serverListenPort = parameters.serverListenPort;
   var onReady = parameters.onReady;
   var onError = parameters.onError;
 
@@ -188,12 +188,12 @@ Rhubarb.prototype._validateParameters = function(parameters){
   if (!this.IS_NODE && !workerPath){
     throw new Error("workerPath is not defined within parameters.");
   }
+  if (!this.IS_NODE && !basePath){
+    throw new Error("basePath is not defined within parameters.");
+  }
   if (!this.IS_NODE && isServer){
     throw new Error("Cannot use browser as a server.");
   }
-  // if (isServer && !serverListenPort){
-  //   throw new Error("serverListenPort is not defined within parameters.");
-  // }
   if (!isServer && !serverAddress){
     throw new Error("serverAddress is not defined within parameters.");
   }

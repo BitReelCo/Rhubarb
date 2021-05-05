@@ -1,5 +1,10 @@
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(factory());
+}(this, (function () { 'use strict';
 
-var WebSocketWorker = function(){
+var WebSocketWorker = function WebSocketWorker() {
   this.pingMsg = new Float32Array(1);
   this.pingTransferable = new Float32Array(2);
   this.pingTransferableList = [this.pingTransferable.buffer];
@@ -8,50 +13,50 @@ var WebSocketWorker = function(){
   this.transferableList = [];
   this.transferables = new Object();
   this.reusableArray = [];
-}
+};
 
-WebSocketWorker.prototype.sendPing = function(){
-  if (worker.isSocketClosed){
+WebSocketWorker.prototype.sendPing = function () {
+  if (worker.isSocketClosed) {
     return;
   }
   worker.ws.send(worker.pingMsg.buffer);
   worker.lastPingSendTime = performance.now();
-}
+};
 
-WebSocketWorker.prototype.onWSOpen = function(){
+WebSocketWorker.prototype.onWSOpen = function () {
   worker.isSocketClosed = false;
-  postMessage({isConnected: true});
+  postMessage({ isConnected: true });
   setTimeout(this.sendPing, 3000);
-}
+};
 
-WebSocketWorker.prototype.onWSMessage = function(event){
+WebSocketWorker.prototype.onWSMessage = function (event) {
   var view = new Float32Array(event.data);
   var protocolID = view[0];
-  if (protocolID == 0){
+  if (protocolID == 0) {
     setTimeout(worker.sendPing, 3000);
-    if (worker.hasPingTransferableOwnership){
+    if (worker.hasPingTransferableOwnership) {
       var latency = performance.now() - worker.lastPingSendTime;
       worker.pingTransferable[0] = -2;
       worker.pingTransferable[1] = latency;
       postMessage(worker.pingTransferable, worker.pingTransferableList);
       worker.hasPingTransferableOwnership = false;
     }
-  }else{
+  } else {
     worker.reusableArray[0] = view.buffer;
     postMessage(view, worker.reusableArray);
   }
-}
+};
 
-WebSocketWorker.prototype.onWSClose = function(){
+WebSocketWorker.prototype.onWSClose = function () {
   worker.isSocketClosed = true;
-  postMessage({isDisconnected: true});
-}
+  postMessage({ isDisconnected: true });
+};
 
-WebSocketWorker.prototype.onWSError = function(event){
-  postMessage({isError: true});
-}
+WebSocketWorker.prototype.onWSError = function (event) {
+  postMessage({ isError: true });
+};
 
-WebSocketWorker.prototype.connect = function(serverURL){
+WebSocketWorker.prototype.connect = function (serverURL) {
   var ws = new WebSocket(serverURL);
   ws.onopen = this.onWSOpen.bind(this);
   ws.onmessage = this.onWSMessage.bind(this);
@@ -59,37 +64,39 @@ WebSocketWorker.prototype.connect = function(serverURL){
   ws.onerror = this.onWSError.bind(this);
   ws.binaryType = "arraybuffer";
   this.ws = ws;
-}
+};
 
 var worker = new WebSocketWorker();
 
-self.onmessage = function(message){
+self.onmessage = function (message) {
   var data = message.data;
 
-  if (data.serverURL){
+  if (data.serverURL) {
     worker.connect(data.serverURL);
-  }else{
-    if (data[0] == -2){
+  } else {
+    if (data[0] == -2) {
       worker.pingTransferable = data;
       worker.pingTransferableList[0] = data.buffer;
       worker.hasPingTransferableOwnership = true;
       return;
     }
-    if (worker.isSocketClosed){
+    if (worker.isSocketClosed) {
       return;
     }
     var length = data.length;
     var intermediateBuffer = worker.intermediateBuffers[length];
-    if (!intermediateBuffer){
+    if (!intermediateBuffer) {
       intermediateBuffer = new Float32Array(length);
       worker.intermediateBuffers[length] = intermediateBuffer;
     }
-    for (var i = 0; i<data.length; i++){
+    for (var i = 0; i < data.length; i++) {
       intermediateBuffer[i] = data[i];
     }
     worker.transferableList[0] = data.buffer;
     postMessage(data, worker.transferableList);
     worker.ws.send(intermediateBuffer.buffer);
   }
-}
+};
 
+})));
+//# sourceMappingURL=RhubarbWorker.js.map
