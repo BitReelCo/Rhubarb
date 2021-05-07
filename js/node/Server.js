@@ -49,14 +49,18 @@ Server.prototype.init = function(port){
       }else{
         var protocol = Globals.protocolsByProtocolID[protocolID];
         var bufIndex = 4;
-        for (var i = 1; i<protocol.buffer.length; i++){
-          protocol.buffer[i] = data.readFloatLE(bufIndex);
-          bufIndex += 4;
+        if (protocol) {
+          for (var i = 1; i<protocol.buffer.length; i++){
+            protocol.buffer[i] = data.readFloatLE(bufIndex);
+            bufIndex += 4;
+          }
+          for (var paramName in protocol.parameters){
+            protocol.getParameterFromBuffer(paramName);
+          }
+          protocol.onValuesReceived(this.clientID);
+        } else {
+          console.log("received a message and could not find protocol with id: ", protocolID)
         }
-        for (var paramName in protocol.parameters){
-          protocol.getParameterFromBuffer(paramName);
-        }
-        protocol.onValuesReceived(this.clientID);
       }
     }.bind({clientID: clientID}));
 
